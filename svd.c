@@ -11,7 +11,7 @@
                 
 //on pourra générer des double aléatoire entre 0.0 et LIMIT_DOUBLE
 #define LIMIT_DOUBLE 1.0
-
+#define AFFICHE
 
 
 #ifdef __i386
@@ -90,17 +90,23 @@ void prod_mat(int m,int n, double *mat_1,int o,int p, double* mat_2,double* mat_
 
 int main( int argc, char** argv)
 {
+#ifdef AFFICHE
 	printf("DECOMPOSITION EN VALEURS SINGULIERES\n");
-	
+#endif
 //INITIALISATION
 	int size_m,size_n;
 	double /**mat_M,*/*mat_U,*mat_V,*mat_Vt,*mat_Ut,*sigma,*res,*res2,*res3;
 	int i,j;
 	uint64_t t0, t1, t2, t3;
-	
-	size_m = 4;
-	size_n = 5;
-	
+
+	if(argc < 3){
+		printf("Argument manquant !!! <./bin size_m size_n>\n");
+		return 1;
+	}
+
+	size_m = atoi(argv[1]);
+	size_n = atoi(argv[2]);
+
 	//mat_M = (double*)malloc(size_m*size_n*sizeof(double));
 	mat_U =  (double*)calloc(size_m*size_m,sizeof(double));
 	mat_V =  (double*)calloc(size_n*size_n,sizeof(double));
@@ -120,21 +126,24 @@ int main( int argc, char** argv)
 					  0.0,0.0,3.0,0.0,0.0,
 					  0.0,0.0,0.0,0.0,0.0,
 					  0.0,4.0,0.0,0.0,0.0};
-		
+#ifdef AFFICHE
 	printf("Matrice M\n");
 	affiche_mat(size_m,size_n,mat_M);
-	
+#endif	
 	t0 = rdtsc();
 //COMPUTE U
 	compute_M_Mt(size_m,size_n,mat_M,mat_U);
+#ifdef AFFICHE
 /*	printf("Matrice U\n");
 	affiche_mat(size_m,size_m,mat_U);*/
+#endif
 //COMPUTE V*
 	compute_Mt_M(size_m,size_n,mat_M,mat_V);
 	//transpose(size_n,size_n,mat_V,mat_Vt);
+#ifdef AFFICHE
 	/*printf("Matrice V\n");
 	affiche_mat(size_n,size_n,mat_V);*/
-	
+#endif	
 	
 //COMPUTE U EIGEN VALUES 
 	//GSL
@@ -153,14 +162,16 @@ int main( int argc, char** argv)
 		gsl_vector_view evec_i 
 		   = gsl_matrix_column (evec, i);
 		sigma[i*size_n+i] = sqrt(eval_i);
-		printf ("eigenvalue = %g\n", eval_i);
-		printf ("eigenvector = \n");
-		gsl_vector_fprintf (stdout, 
-							&evec_i.vector, "%g");
-	  }
-	  
+#ifdef AFFICHE
+		printf("eigenvalue = %g\n", eval_i);
+		printf("eigenvector = \n");
+		gsl_vector_fprintf(stdout, &evec_i.vector, "%g");
+#endif
+	}
+#ifdef AFFICHE
 	printf("Matrice U\n");
-	affiche_mat(size_m,size_m,evec->data);
+	affiche_mat(size_m, size_m, evec->data);
+#endif
 	
 	prod_mat(size_m,size_m,evec->data,size_m,size_n,sigma,res);
 	
@@ -173,20 +184,20 @@ int main( int argc, char** argv)
 	gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_VAL_DESC);
 			
 	t1 = rdtsc();
-		
+#ifdef AFFICHE
 	printf("Matrice sigma\n");
-	affiche_mat(size_m,size_n,sigma);
-	
-	transpose(size_n,size_n,evec->data,mat_Vt);
+	affiche_mat(size_m, size_n, sigma);
+#endif
+	transpose(size_n, size_n, evec->data, mat_Vt);
+#ifdef AFFICHE
 	printf("Matrice V*\n");
-	affiche_mat(size_n,size_n,mat_Vt);
-	
-	
-	prod_mat(size_m,size_n,res,size_n,size_n,mat_Vt,res2);
-
+	affiche_mat(size_n, size_n, mat_Vt);
+#endif
+	prod_mat(size_m, size_n, res, size_n, size_n, mat_Vt, res2);
+#ifdef AFFICHE
 	printf("Matrice recalculée\n");
 	affiche_mat(size_m,size_n,res2);
-	
+#endif
 	gsl_vector_free (eval);
 	gsl_matrix_free (evec);
 	
