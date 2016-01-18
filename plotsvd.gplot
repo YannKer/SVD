@@ -1,0 +1,9 @@
+set terminal png
+set output "time.png"
+
+set xlabel "Taille de la matrice"
+set ylabel "Time (sec)"
+set title "Temps d'exec"
+set log y 2
+
+plot "./time.dat" title "SVD" w lp
